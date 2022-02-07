@@ -20,9 +20,9 @@ function pdfTextExtract (filePath, options, pdfToTextCommand, cb) {
   if (!pdfToTextCommand) {
     pdfToTextCommand = 'pdftotext'
   }
-
-  filePath = path.resolve(filePath)
-
+  if (!options.base64) {
+    filePath = path.resolve(filePath)
+  }
   // [feat-promise] if cb is not a function, then it's probably a promise-typed call
   if (typeof (cb) !== 'function') {
     cb = null
@@ -40,7 +40,7 @@ function pdfTextExtract (filePath, options, pdfToTextCommand, cb) {
 
   // Build args based on options
   var args = []
-
+  if (options.base64) { args.push('-d'); args.push(options.base64) }
   // First and last page to convert
   if (options.firstPage) { args.push('-f'); args.push(options.firstPage) }
   if (options.lastPage) { args.push('-l'); args.push(options.lastPage) }
@@ -72,9 +72,12 @@ function pdfTextExtract (filePath, options, pdfToTextCommand, cb) {
   if (options.userPassword) { args.push('-upw'); args.push(options.userPassword) }
 
   // finish up arguments
-  args.push(filePath)
-  args.push('-')
-
+  if (!options.base64) {
+    args.push(filePath)
+    args.push('-')
+  }
+  
+  
   function splitPages (err, content) {
     if (err) {
       return cb(err)
